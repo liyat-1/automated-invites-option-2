@@ -1,0 +1,48 @@
+{
+  "source": "github",
+  "repo": "https://github.com/liyat-1/auto-invite-stream-final.git",
+  "capabilities": [
+    {
+      "capability": "code",
+      "source": "github",
+      "outcome": "recreate",
+      "status": "done",
+      "next_action": ""
+    },
+    {
+      "capability": "schema",
+      "source": "github",
+      "outcome": "absent",
+      "status": "n/a",
+      "next_action": "no database in source"
+    },
+    {
+      "capability": "records",
+      "source": "github",
+      "outcome": "absent",
+      "status": "n/a",
+      "next_action": "no record export; app uses in-app data"
+    },
+    {
+      "capability": "auth",
+      "source": "github",
+      "outcome": "absent",
+      "status": "n/a",
+      "next_action": "no auth in source"
+    },
+    {
+      "capability": "secrets",
+      "source": "github",
+      "outcome": "absent",
+      "status": "n/a",
+      "next_action": "no env vars in source"
+    },
+    {
+      "capability": "verification",
+      "source": "github",
+      "outcome": "pending",
+      "status": "done",
+      "next_action": ""
+    }
+  ]
+}
