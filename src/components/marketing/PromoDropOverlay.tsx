@@ -315,7 +315,9 @@ export function PromoDropOverlay({
               <span className="grid size-8 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground"><Ban size={15} /></span>
               <div className="min-w-0">
                 <p className="text-[12.5px] font-semibold text-card-foreground">No promotion</p>
-                <p className="mt-0.5 text-[10.5px] text-muted-foreground">{unassigned.length} campaigns without an offer</p>
+                <p className="mt-0.5 text-[10.5px] text-muted-foreground">
+                  {unassigned.length} campaign{unassigned.length === 1 ? "" : "s"} with a free guest segment
+                </p>
               </div>
             </div>
             <BulkDragChips
@@ -324,21 +326,47 @@ export function PromoDropOverlay({
               onDragEnd={() => { setBulk(null); setOverArea(null); }}
             />
             <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5">
-              {unassigned.map((campaign) => (
-                <article
-                  key={campaign.id}
-                  draggable
-                  onDragStart={(event) => beginDrag(event, campaign.id)}
-                  onDragEnd={() => { setDragging(null); setOverArea(null); }}
-                  className={`flex cursor-grab items-center gap-2 rounded-md border border-border bg-background px-2.5 py-2.5 shadow-sm transition-shadow hover:shadow active:cursor-grabbing ${dragging === campaign.id ? "opacity-50" : ""}`}
-                >
-                  <GripVertical size={12} className="shrink-0 text-muted-foreground/60" />
-                  <div className="min-w-0">
-                    <p className="truncate text-[12px] font-medium text-card-foreground">{campaign.name}</p>
-                    <p className="truncate text-[10.5px] text-muted-foreground">{campaign.timing}</p>
-                  </div>
-                </article>
-              ))}
+              {unassigned.map((campaign) => {
+                const free = freeAudiences(campaign);
+                return (
+                  <article
+                    key={campaign.id}
+                    draggable
+                    onDragStart={(event) => beginDrag(event, campaign.id)}
+                    onDragEnd={() => { setDragging(null); setOverArea(null); }}
+                    className={`flex cursor-grab items-center gap-2 rounded-md border border-border bg-background px-2.5 py-2.5 shadow-sm transition-shadow hover:shadow active:cursor-grabbing ${dragging === campaign.id ? "opacity-50" : ""}`}
+                  >
+                    <GripVertical size={12} className="shrink-0 text-muted-foreground/60" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[12px] font-medium text-card-foreground">{campaign.name}</p>
+                      <p className="truncate text-[10.5px] text-muted-foreground">{campaign.timing}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      {AUDIENCE_KEYS.map((audience) => {
+                        const isFree = free.includes(audience);
+                        return (
+                          <span
+                            key={audience}
+                            title={
+                              isFree
+                                ? `${audience === "direct" ? "Direct" : "OTA"} guests are still free`
+                                : `${audience === "direct" ? "Direct" : "OTA"} guests already carry an offer`
+                            }
+                            className={`rounded-sm border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                              isFree
+                                ? "border-border text-muted-foreground"
+                                : "border-transparent bg-muted text-muted-foreground/40 line-through"
+                            }`}
+                          >
+                            {audience}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </article>
+                );
+              })}
+
               {unassigned.length === 0 && (
                 <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-[11px] text-muted-foreground">
                   Drop here to remove a promotion
