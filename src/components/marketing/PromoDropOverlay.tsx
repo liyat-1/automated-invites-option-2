@@ -198,13 +198,22 @@ export function PromoDropOverlay({
     setVariantPromotion(campaignId, audience, value ? promotionId : null);
   };
 
-  /** Dropping a campaign onto an offer moves it there for both guest segments. */
+  /** Dropping a campaign onto an offer moves only its still-free segments. */
   const dropCampaign = (campaignId: string, promotionId: string) => {
     const campaign = campaigns.find((c) => c.id === campaignId);
     if (!campaign) return;
-    AUDIENCE_KEYS.forEach((audience) => setVariantPromotion(campaignId, audience, promotionId));
+    const free = freeAudiences(campaign);
+    const target = free.length > 0 ? free : AUDIENCE_KEYS.filter(
+      (a) => campaign.variants[a].promotionId === promotionId,
+    );
+    if (target.length === 0) {
+      setNote(`${campaign.name} already carries an offer for both guest segments.`);
+      return;
+    }
+    target.forEach((audience) => setVariantPromotion(campaignId, audience, promotionId));
     setNote(null);
   };
+
 
   const audiencesOf = (scope: BulkScope): AudienceKey[] =>
     scope === "both" ? AUDIENCE_KEYS : [scope];
