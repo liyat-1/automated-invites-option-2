@@ -160,9 +160,13 @@ export function PromoDropOverlay({
       ),
     );
 
-  const unassigned = campaigns.filter((campaign) =>
-    AUDIENCE_KEYS.every((audience) => campaign.variants[audience].promotionMode !== "custom"),
-  );
+  /** Guest segments of a campaign that carry no offer yet. */
+  const freeAudiences = (campaign: MarketingCampaign): AudienceKey[] =>
+    AUDIENCE_KEYS.filter((audience) => campaign.variants[audience].promotionMode !== "custom");
+
+  /** A campaign waits in No promotion while any of its segments is still free. */
+  const unassigned = campaigns.filter((campaign) => freeAudiences(campaign).length > 0);
+
 
   const beginDrag = (event: React.DragEvent, campaignId: string) => {
     event.dataTransfer.setData(CAMPAIGN_DRAG_TYPE, campaignId);
