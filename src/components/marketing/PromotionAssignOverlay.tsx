@@ -92,7 +92,7 @@ export function PromotionAssignOverlay({
   const [query, setQuery] = useState("");
   const [dragging, setDragging] = useState<MarketingCampaign | null>(null);
   const [bulk, setBulk] = useState<BulkScope | null>(null);
-  const [over, setOver<CampaignGroup | -1 | null>, setOverState] = useState<CampaignGroup | -1 | null>(null);
+  const [over, setOverState] = useState<CampaignGroup | -1 | null>(null);
 
   const assignedIn = (group: CampaignGroup) =>
     campaigns.filter((c) => {
@@ -145,7 +145,6 @@ export function PromotionAssignOverlay({
     if (!dragging && !bulk && !types.includes(CAMPAIGN_DRAG_TYPE) && !types.includes(CAMPAIGN_BULK_DRAG_TYPE)) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "copy";
-    setOver(over);
   };
 
   const drop = (event: React.DragEvent, group: CampaignGroup | -1) => {
