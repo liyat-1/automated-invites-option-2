@@ -163,3 +163,9 @@
 - [x] Match the assignment popup's Direct/OTA unchecked state to the manage-promo erased visual
 - [x] Make the promotion page clean and polished like the media library page
 - [x] Verify all three at desktop and narrow widths
+
+## Promotion assignment and list correction
+
+- [ ] Return a campaign to Available when either guest segment is unchecked, with only assigned segments scratched out
+- [ ] Remove the promotion library rail and use promo wording throughout the page
+- [ ] Restore one promotion card per row and verify the updated flow

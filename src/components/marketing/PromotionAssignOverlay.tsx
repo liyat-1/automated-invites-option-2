@@ -94,8 +94,6 @@ export function PromotionAssignOverlay({
   const available = campaigns.filter(
     (c) =>
       isFree(c) &&
-      !promotionAudiencesOn(c, promotion.id).direct &&
-      !promotionAudiencesOn(c, promotion.id).ota &&
       (!q || c.name.toLowerCase().includes(q)),
   );
 
@@ -116,7 +114,7 @@ export function PromotionAssignOverlay({
       }));
   };
 
-  /** Dragging a campaign back onto the available column clears this offer. */
+  /** Dragging a campaign back onto the available column clears this promotion. */
   const unassign = (campaign: MarketingCampaign) => {
     const on = promotionAudiencesOn(campaign, promotion.id);
     AUDIENCES.forEach(({ key }) => {
@@ -164,7 +162,7 @@ export function PromotionAssignOverlay({
           <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">Assign campaigns</p>
           <h2 id="promotion-assignment-title" className="truncate text-[17px] font-semibold text-card-foreground">{promotion.name}</h2>
           <p className="truncate text-[11.5px] text-muted-foreground">
-            {promotion.detail} · {promotion.code} · {totalAssigned} campaign{totalAssigned === 1 ? "" : "s"} carry this offer
+            {promotion.detail} · {promotion.code} · {totalAssigned} campaign{totalAssigned === 1 ? "" : "s"} carry this promo
           </p>
         </div>
         <Button variant="ghost" size="icon" className="size-8" aria-label="Close" onClick={onClose}>
@@ -175,7 +173,7 @@ export function PromotionAssignOverlay({
       <p className="flex items-start gap-2 border-b border-border bg-brand-soft/50 px-4 py-2 text-[11.5px] text-muted-foreground sm:px-6">
         <Info size={13} className="mt-[1px] shrink-0 text-brand" />
         Drag campaigns into a message section — or use the bulk chips to add every free campaign at once. Each campaign
-        carries one offer per guest segment, so a segment already used by another offer stays locked here.
+        carries one promo per guest segment, so a segment already used by another promo stays locked here.
       </p>
 
        <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-5">
@@ -257,15 +255,18 @@ export function PromotionAssignOverlay({
                   </p>
                   <div className="mt-1.5 flex flex-wrap gap-1 pl-[18px]">
                     {AUDIENCES.map(({ key }) => {
+                      const assignedPromotionId = variantPromotionId(campaign, key);
                       const blocker = blockedBy(draftState, campaign, key, promotion.id);
                       return (
                         <SegmentPill
                           key={key}
                           audience={key}
-                          state={blocker ? "erased" : "free"}
+                          state={assignedPromotionId ? "erased" : "free"}
                           title={
                             blocker
                               ? `${AUDIENCE_LABEL[key]} guests already carry “${blocker}” on this campaign`
+                              : assignedPromotionId === promotion.id
+                                ? `${AUDIENCE_LABEL[key]} guests already carry this promo`
                               : `${AUDIENCE_LABEL[key]} guests are free on this campaign`
                           }
                         />
@@ -276,7 +277,7 @@ export function PromotionAssignOverlay({
               ))}
               {available.length === 0 && (
                 <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-[11px] text-muted-foreground">
-                  Drop here to remove this offer
+                  Drop here to remove this promo
                 </p>
               )}
             </div>
@@ -389,10 +390,10 @@ function AssignedRow({
               disabled={Boolean(blocker)}
               title={
                 blocker
-                  ? `${AUDIENCE_LABEL[key]} guests already use “${blocker}” on this campaign. One promotion per guest segment.`
+                    ? `${AUDIENCE_LABEL[key]} guests already use “${blocker}” on this campaign. One promo per guest segment.`
                   : on[key]
-                    ? `${AUDIENCE_LABEL[key]} guests receive this offer — untick to give them a different one`
-                    : `${AUDIENCE_LABEL[key]} guests are free again — tick to give them this offer`
+                    ? `${AUDIENCE_LABEL[key]} guests receive this promo — untick to make this segment available again`
+                    : `${AUDIENCE_LABEL[key]} guests are free again — tick to give them this promo`
               }
               onClick={(value) => onChange(campaign.id, key, value ? promotion.id : null)}
             />
