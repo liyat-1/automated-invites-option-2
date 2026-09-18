@@ -208,25 +208,30 @@ export function PromotionEditorOverlay({ promotion, onClose }: { promotion?: Pro
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-canvas">
+    <div className="fixed inset-0 z-[60] grid place-items-center bg-foreground/70 p-2 sm:p-4" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section role="dialog" aria-modal="true" aria-labelledby="promotion-editor-title" className="flex h-[92vh] max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-border bg-canvas shadow-float">
       <header className="flex items-center gap-3 border-b border-border bg-card px-4 py-3 sm:px-6">
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">
             {editing ? "Edit promotion" : "New promotion"}
           </p>
-          <h2 className="truncate text-[17px] font-semibold text-card-foreground">{name || "Untitled offer"}</h2>
-          <p className="text-[11.5px] text-muted-foreground">
-            Set the offer details, then design the guest-facing banner. Assigning campaigns stays a separate step.
+          <h2 id="promotion-editor-title" className="truncate text-[17px] font-semibold text-card-foreground">{name || "Untitled offer"}</h2>
+          <p className="truncate text-[11.5px] text-muted-foreground">
+            Set the offer details and banner design — the guest preview updates live on the right.
           </p>
         </div>
+        {error && <p className="hidden shrink-0 text-[11.5px] font-medium text-destructive sm:block">{error}</p>}
+        <Button variant="brand" size="sm" onClick={save}>
+          {editing ? "Save changes" : "Create promotion"}
+        </Button>
         <Button variant="ghost" size="icon" className="size-8" aria-label="Close" onClick={onClose}>
           <X size={16} />
         </Button>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-4xl px-4 py-5 sm:px-6">
-          <div className="space-y-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="min-w-0 space-y-4">
             <section className="rounded-lg border border-border bg-card p-4 shadow-card">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">Details</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -378,24 +383,17 @@ export function PromotionEditorOverlay({ promotion, onClose }: { promotion?: Pro
                 </div>
               </div>
             </section>
-            <section className="rounded-lg border border-border bg-card p-4 shadow-card sm:p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">Guest preview</p>
-              <p className="mt-1 text-[12px] text-muted-foreground">This is how the promotion will appear in guest messages.</p>
-              <div className="mx-auto mt-4 max-w-md">
-                <PromoBanner promotion={preview} />
-              </div>
-            </section>
+          </div>
 
-            {error && <p className="text-[11.5px] font-medium text-destructive">{error}</p>}
-            <div className="sticky bottom-0 flex justify-end gap-2 border-t border-border bg-canvas/95 py-3 backdrop-blur">
-              <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-              <Button variant="brand" size="sm" onClick={save}>
-                {editing ? "Save changes" : "Create promotion"}
-              </Button>
-            </div>
+          {/* Sticky live guest preview */}
+          <div className="min-w-0 lg:sticky lg:top-4 lg:self-start">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Guest preview</p>
+            <p className="mb-4 text-[12px] text-muted-foreground">This is how the promotion will appear in guest messages.</p>
+            <PromoBanner promotion={preview} />
           </div>
         </div>
       </div>
+      </section>
 
       <MediaPicker
         open={picker !== null}
