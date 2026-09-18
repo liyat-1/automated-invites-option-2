@@ -135,3 +135,11 @@
 - [x] Media assignment rebuilt on the promo model: fixed campaign column, file columns with Change file / Browse library, Direct/OTA checkboxes
 - [x] Both boards are horizontally scrollable with Add offer / Add file, so the count is not fixed at three
 - [x] iPhone preview: composer pinned outside the scroll area, frosted glass, larger; content no longer overflows the frame
+
+## Promotion redesign (approved plan)
+
+- [x] Flatten Promotions page into one list with per-promotion three-dot menu (edit config, duplicate, delete) and always-visible New promotion
+- [x] Rebuild promotion assignment as a board: available campaigns column plus Automated Invites / Transactional / In-Property columns with bulk drops and grayed blocked segments
+- [x] Simplify media columns to Change file / Clear column buttons (config panel removed)
+- [x] Fix editor freeze (media library overlay intercepted clicks; Escape/backdrop close added)
+- [x] Typecheck and browser-verified promotions list, assignment board, and media board — no console errors
