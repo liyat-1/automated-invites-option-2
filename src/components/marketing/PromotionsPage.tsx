@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Copy, Link2, MoreVertical, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { MarketingShell } from "./MarketingShell";
 import { PromotionAssignOverlay } from "./PromotionAssignOverlay";
