@@ -124,39 +124,42 @@ export function MediaLibraryPage() {
 
   return (
     <MarketingShell title="Media">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:flex-row">
-        <aside className="w-full shrink-0 lg:w-56">
-          <div className="flex items-center justify-between px-1 pb-2">
-            <p className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">Folders</p>
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col overflow-hidden md:h-[calc(100dvh-57px)] md:flex-row">
+        <aside className="flex shrink-0 flex-col border-b border-border bg-card md:h-full md:w-60 md:border-b-0 md:border-r">
+          <div className="flex items-center justify-between border-b border-border px-4 py-4 md:px-5">
+            <div>
+              <p className="text-[13px] font-semibold text-card-foreground">Library folders</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">Organise campaign assets</p>
+            </div>
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
               onClick={createFolder}
               aria-label="New folder"
               title="New folder"
-              className="size-7 text-muted-foreground"
+              className="size-8 text-brand"
             >
               <FolderPlus size={15} />
             </Button>
           </div>
 
-          <button
-            onClick={() => setFolder("All")}
-            className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12.5px] transition-colors ${
-              folder === "All" ? "bg-brand-soft font-semibold text-brand" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
-          >
-            <Folder size={14} className={folder === "All" ? "text-brand" : "text-muted-foreground"} />
-            <span className="flex-1">All media</span>
-            <span className="text-[10.5px] tabular-nums text-muted-foreground">{countIn("All")}</span>
-          </button>
-
-          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:block">
+          <div className="grid max-h-48 grid-cols-2 gap-1 overflow-y-auto p-3 sm:grid-cols-3 md:max-h-none md:grid-cols-1 md:p-3">
+            <Button
+              variant="ghost"
+              onClick={() => setFolder("All")}
+              className={`h-10 w-full justify-start gap-3 px-3 text-[12.5px] ${
+                folder === "All" ? "bg-brand-soft font-semibold text-brand hover:bg-brand-soft" : "text-muted-foreground"
+              }`}
+            >
+              <FolderOpen size={18} className={folder === "All" ? "text-brand" : "text-muted-foreground"} />
+              <span className="min-w-0 flex-1 truncate text-left">All media</span>
+              <span className="rounded-sm bg-muted px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">{countIn("All")}</span>
+            </Button>
            {folders.map((f) => {
             const active = folder === f;
             if (renamingFolder === f) {
               return (
-                <div key={f} className="px-2 py-1">
+                <div key={f} className="px-2 py-1.5">
                   <RenameField
                     value={f}
                     onSave={(v) => renameFolder(f, v)}
@@ -178,14 +181,14 @@ export function MediaLibraryPage() {
                       if (m) m.folder = f;
                     });
                 }}
-                className={`group flex items-center gap-2 rounded-md px-2 py-1.5 text-[12.5px] transition-colors ${
+                className={`group flex h-10 items-center gap-2 rounded-md px-3 text-[12.5px] transition-colors ${
                   active ? "bg-brand-soft font-semibold text-brand" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
-                <button onClick={() => setFolder(f)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
-                  <Folder size={14} className={active ? "text-brand" : "text-muted-foreground"} />
+                <button onClick={() => setFolder(f)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                  <Folder size={18} className={active ? "fill-brand-soft text-brand" : "fill-warning-soft text-warning"} />
                   <span className="min-w-0 flex-1 truncate">{f}</span>
-                  <span className="text-[10.5px] tabular-nums text-muted-foreground">{countIn(f)}</span>
+                  <span className="text-[10px] tabular-nums text-muted-foreground">{countIn(f)}</span>
                 </button>
                 <button
                   onClick={() => setRenamingFolder(f)}
@@ -205,26 +208,24 @@ export function MediaLibraryPage() {
             );
            })}
           </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={createFolder}
-            className="mt-2 w-full border-dashed text-muted-foreground"
-          >
-            <FolderPlus size={14} />
-            New folder
-          </Button>
+          <div className="mt-auto hidden border-t border-border p-5 md:block">
+            <div className="mb-2 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+              <span>{media.length} assets stored</span>
+              <span>32%</span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full w-[32%] rounded-full bg-brand" /></div>
+          </div>
         </aside>
 
-        <div className="min-w-0 flex-1">
-          <header className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
+        <main className="min-w-0 flex-1 overflow-y-auto bg-canvas/70">
+          <div className="sticky top-0 z-20 border-b border-border bg-card/95 px-4 py-4 backdrop-blur-md sm:px-6">
+          <header className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
-                {folder === "All" ? <FolderOpen size={19} /> : <Folder size={19} />}
+                {folder === "All" ? <FolderOpen size={20} /> : <Folder size={20} className="fill-brand-soft" />}
               </span>
               <div className="min-w-0">
-                <h2 className="truncate text-[16px] font-semibold tracking-tight text-card-foreground">{folder === "All" ? "All media" : folder}</h2>
+                <h2 className="truncate text-[18px] font-semibold tracking-tight text-card-foreground">{folder === "All" ? "All media" : folder}</h2>
                 <p className="text-[12px] text-muted-foreground">{countIn(folder)} {countIn(folder) === 1 ? "asset" : "assets"}</p>
               </div>
             </div>
@@ -234,14 +235,14 @@ export function MediaLibraryPage() {
             </Button>
           </header>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             <div className="relative min-w-[200px] flex-1">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search media"
-                className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-[13px] text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand focus:ring-2 focus:ring-brand/20"
+                className="w-full rounded-md border border-border bg-muted/55 py-2.5 pl-9 pr-3 text-[13px] text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand focus:bg-background focus:ring-2 focus:ring-brand/20"
               />
             </div>
             <div className="flex gap-1 rounded-md bg-muted p-1 text-[12.5px]">
@@ -268,6 +269,7 @@ export function MediaLibraryPage() {
               }}
             />
           </div>
+          </div>
 
           <div
             onDragOver={(e) => {
@@ -280,7 +282,7 @@ export function MediaLibraryPage() {
               setDragging(false);
               upload(e.dataTransfer.files);
             }}
-            className={`mt-4 rounded-lg border p-4 transition-colors sm:p-5 ${
+            className={`m-4 rounded-lg border transition-colors sm:m-6 ${
               dragging ? "border-brand bg-brand-soft" : "border-border bg-card shadow-card"
             }`}
           >
@@ -288,7 +290,7 @@ export function MediaLibraryPage() {
               type="button"
               variant="outline"
               onClick={() => fileRef.current?.click()}
-              className="mb-5 h-auto w-full justify-start gap-4 whitespace-normal border-dashed bg-muted/40 px-4 py-4 text-left shadow-none hover:border-brand/60 hover:bg-muted/70 sm:px-5"
+              className="m-4 mb-1 h-auto w-[calc(100%-2rem)] justify-start gap-4 whitespace-normal border-dashed bg-muted/40 px-4 py-3 text-left shadow-none hover:border-brand/60 hover:bg-muted/70 sm:px-5"
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-border bg-background text-muted-foreground shadow-card">
                 <FileUp size={18} />
@@ -306,7 +308,7 @@ export function MediaLibraryPage() {
               </span>
             </Button>
 
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-5 p-4 sm:p-5">
               {list.map((m) => (
                 <div
                   key={m.id}
@@ -314,10 +316,10 @@ export function MediaLibraryPage() {
                   onDragStart={(e) => e.dataTransfer.setData("text/media-id", m.id)}
                   className="group overflow-hidden rounded-lg border border-border bg-card shadow-card transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-brand/45 hover:shadow-lift"
                 >
-                  <div className="aspect-[4/3] overflow-hidden bg-muted">
+                  <div className="aspect-[16/11] min-h-36 overflow-hidden bg-muted">
                     <MediaThumb item={m} />
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-2.5">
+                  <div className="flex min-h-16 items-center gap-2 border-t border-border px-3.5 py-3">
                     <div className="min-w-0 flex-1">
                       {renamingItem === m.id ? (
                         <RenameField
@@ -341,7 +343,7 @@ export function MediaLibraryPage() {
                         </button>
                       )}
                       <p className="truncate text-[11px] text-muted-foreground" title={m.name}>
-                        {m.folder} · {m.size}
+                        <span className="capitalize">{m.type}</span> · {m.size}
                         {m.dims ? ` · ${m.dims}` : ""}
                       </p>
                     </div>
@@ -379,7 +381,7 @@ export function MediaLibraryPage() {
               )}
             </div>
           </div>
-        </div>
+        </main>
       </div>
       <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(value) => !value && setDeleteTarget(null)}>
         <AlertDialogContent className="border-border bg-card shadow-float">
