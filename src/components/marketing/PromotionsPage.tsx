@@ -26,6 +26,33 @@ import {
   useMarketing,
 } from "@/lib/marketing";
 
+/** Live banner preview scaled to always fit inside the card thumbnail. */
+function BannerThumb({ promotion }: { promotion: (typeof promotions)[number] }) {
+  const inner = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.6);
+  useLayoutEffect(() => {
+    const el = inner.current;
+    if (!el) return;
+    const fit = () => setScale(Math.min(176 / el.offsetWidth, 122 / el.offsetHeight, 1));
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [promotion]);
+  return (
+    <span className="block h-[122px] w-[176px] overflow-hidden">
+      <span
+        className="block origin-top-left"
+        style={{ transform: `scale(${scale})`, width: 176 / scale }}
+      >
+        <span ref={inner} className="block w-[292px]">
+          <PromoBanner promotion={promotion} className="shadow-none" />
+        </span>
+      </span>
+    </span>
+  );
+}
+
 /**
  * One flat list: every promotion with its banner, its campaign count, the
  * assign action, and a three-dot menu for config, duplication and deletion.
