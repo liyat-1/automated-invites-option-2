@@ -156,3 +156,10 @@
 - [x] Rebuild the media library as a clean OneDrive-style workspace with a fixed folder rail
 - [x] Enlarge file tiles and give documents and videos equal visual weight to image assets
 - [x] Verify scrolling, folders, file actions, uploads, and responsive layouts
+
+## Promotion screens polish
+
+- [ ] Make the promotion assignment popup full width
+- [ ] Match the assignment popup's Direct/OTA unchecked state to the manage-promo erased visual
+- [ ] Make the promotion page clean and polished like the media library page
+- [ ] Verify all three at desktop and narrow widths
