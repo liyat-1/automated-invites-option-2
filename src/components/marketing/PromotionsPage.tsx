@@ -146,14 +146,9 @@ export function PromotionsPage() {
                   type="button"
                   title="Edit this promotion's config"
                   onClick={() => setEditingId(promotion.id)}
-                  className="relative hidden h-[122px] w-[176px] shrink-0 overflow-hidden rounded-md border border-border bg-muted/30 sm:block"
+                  className="hidden h-[122px] w-[176px] shrink-0 overflow-hidden rounded-md border border-border bg-muted/30 sm:block"
                 >
-                  <div
-                    className="absolute left-0 top-0 w-[292px] origin-top-left"
-                    style={{ transform: "scale(0.6)" }}
-                  >
-                    <PromoBanner promotion={promotion} className="shadow-none" />
-                  </div>
+                  <BannerThumb promotion={promotion} />
                 </button>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[13.5px] font-semibold text-card-foreground">{promotion.name}</p>
