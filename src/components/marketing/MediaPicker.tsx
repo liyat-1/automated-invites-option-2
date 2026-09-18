@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, Image as ImageIcon, Film, FileText, Search, Check, Play, Upload, Folder, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { mutate, uid, useMarketing, type MediaItem, type MediaType } from "@/lib/marketing";
