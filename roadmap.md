@@ -143,3 +143,10 @@
 - [x] Simplify media columns to Change file / Clear column buttons (config panel removed)
 - [x] Fix editor freeze (media library overlay intercepted clicks; Escape/backdrop close added)
 - [x] Typecheck and browser-verified promotions list, assignment board, and media board — no console errors
+
+## Marketing workspace consistency
+
+- [ ] Restyle promotion assignment as a bounded popup matching Manage promotions, with Cancel and Save
+- [ ] Polish the media library with cleaner Drive-like navigation, icons, toolbar, and asset cards
+- [ ] Rework promotion create/edit into the established split layout with controls left and live preview right
+- [ ] Verify all three workflows at desktop and narrow widths
