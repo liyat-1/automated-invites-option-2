@@ -300,7 +300,7 @@ export function PromotionAssignOverlay({
                     <p className="truncate pl-[18px] text-[10.5px] text-muted-foreground">
                       {free.map((a) => a.label).join(" + ")} available
                       {taken.length > 0 &&
-                       {taken.map((a) => a.label).join(", ")} on ${blockedBy(draftState, campaign, taken[0].key, promotion.id)}`}
+                        ` · ${taken.map((a) => a.label).join(", ")} on ${blockedBy(draftState, campaign, taken[0].key, promotion.id)}`}
                     </p>
                   </article>
                 );
@@ -355,16 +355,17 @@ export function PromotionAssignOverlay({
               );
             })}
           </div>
-       <footer className="flex items-center justify-between gap-3 border-t border-border bg-card px-4 py-3 sm:px-6">
-         <p className="text-[11.5px] text-muted-foreground">{dirty ? "Unsaved assignment changes" : "No assignment changes"}</p>
-         <div className="flex items-center gap-2">
-           <Button variant="outline" onClick={onClose}>Cancel</Button>
-           <Button variant="brand" disabled={!dirty} onClick={save}><Check size={14} />Save assignment</Button>
-         </div>
-       </footer>
-      </section>
-     </div>
+        </div>
       </div>
+
+      <footer className="flex items-center justify-between gap-3 border-t border-border bg-card px-4 py-3 sm:px-6">
+        <p className="text-[11.5px] text-muted-foreground">{dirty ? "Unsaved assignment changes" : "No assignment changes"}</p>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="brand" disabled={!dirty} onClick={save}><Check size={14} />Save assignment</Button>
+        </div>
+      </footer>
+      </section>
     </div>
   );
 }
