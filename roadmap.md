@@ -146,7 +146,7 @@
 
 ## Marketing workspace consistency
 
-- [ ] Restyle promotion assignment as a bounded popup matching Manage promotions, with Cancel and Save
+- [x] Restyle promotion assignment as a bounded popup matching Manage promotions, with Cancel and Save — browser-verified staged save/cancel/persist
 - [ ] Polish the media library with cleaner Drive-like navigation, icons, toolbar, and asset cards
 - [ ] Rework promotion create/edit into the established split layout with controls left and live preview right
 - [ ] Verify all three workflows at desktop and narrow widths
