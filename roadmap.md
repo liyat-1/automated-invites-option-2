@@ -155,4 +155,4 @@
 
 - [x] Rebuild the media library as a clean OneDrive-style workspace with a fixed folder rail
 - [x] Enlarge file tiles and give documents and videos equal visual weight to image assets
-- [ ] Verify scrolling, folders, file actions, uploads, and responsive layouts
+- [x] Verify scrolling, folders, file actions, uploads, and responsive layouts

@@ -125,7 +125,7 @@ export function MediaLibraryPage() {
   return (
     <MarketingShell title="Media">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col overflow-hidden md:h-[calc(100dvh-57px)] md:flex-row">
-        <aside className="shrink-0 border-b border-border bg-card md:h-full md:w-60 md:border-b-0 md:border-r">
+        <aside className="flex shrink-0 flex-col border-b border-border bg-card md:h-full md:w-60 md:border-b-0 md:border-r">
           <div className="flex items-center justify-between border-b border-border px-4 py-4 md:px-5">
             <div>
               <p className="text-[13px] font-semibold text-card-foreground">Library folders</p>
