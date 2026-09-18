@@ -58,15 +58,20 @@ export function PromotionAssignOverlay({
   const draftState = { ...state, campaigns };
 
   const updatePromotion = (campaignId: string, audience: AudienceKey, promotionId: string | null) => {
+    console.log("updatePromotion", campaignId, audience, promotionId);
     setCampaigns((current) => {
       const next = JSON.parse(JSON.stringify(current)) as MarketingCampaign[];
       const campaign = next.find((item) => item.id === campaignId);
-      if (!campaign) return current;
+      if (!campaign) {
+        console.log("campaign not found");
+        return current;
+      }
       campaign.variants[audience].promotionMode = promotionId ? "custom" : "none";
       campaign.variants[audience].promotionId = promotionId;
       const any = variantPromotionId(campaign, "direct") ?? variantPromotionId(campaign, "ota");
       campaign.promotionId = any;
       campaign.promotionMode = any ? "custom" : "none";
+      console.log("updated", campaign.id, JSON.stringify(campaign.variants));
       return next;
     });
   };
