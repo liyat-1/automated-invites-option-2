@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image as ImageIcon, X } from "lucide-react";
+import { Gift, Image as ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmojiPicker } from "./EmojiPicker";
 import { MediaPicker } from "./MediaPicker";
