@@ -159,7 +159,7 @@
 
 ## Promotion screens polish
 
-- [ ] Make the promotion assignment popup full width
-- [ ] Match the assignment popup's Direct/OTA unchecked state to the manage-promo erased visual
-- [ ] Make the promotion page clean and polished like the media library page
-- [ ] Verify all three at desktop and narrow widths
+- [x] Make the promotion assignment popup full width
+- [x] Match the assignment popup's Direct/OTA unchecked state to the manage-promo erased visual
+- [x] Make the promotion page clean and polished like the media library page
+- [x] Verify all three at desktop and narrow widths
