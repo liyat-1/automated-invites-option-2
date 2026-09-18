@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Check, FileStack, GripVertical, Info, Search, X } from "lucide-react";
+import { Check, FileStack, Gift, GripVertical, Info, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BulkDragChips } from "./BulkDragChips";
 import { SegmentPill } from "./SegmentPill";
@@ -158,6 +158,9 @@ export function PromotionAssignOverlay({
     <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/70 p-2 sm:p-4" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <section role="dialog" aria-modal="true" aria-labelledby="promotion-assignment-title" className="flex h-full max-h-none w-full max-w-none flex-col overflow-hidden rounded-lg border border-border bg-canvas shadow-float">
       <header className="flex items-center gap-3 border-b border-border bg-card px-4 py-3 sm:px-6">
+        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
+          <Gift size={20} />
+        </span>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">Assign campaigns</p>
           <h2 id="promotion-assignment-title" className="truncate text-[17px] font-semibold text-card-foreground">{promotion.name}</h2>
