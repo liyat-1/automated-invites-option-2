@@ -147,6 +147,6 @@
 ## Marketing workspace consistency
 
 - [x] Restyle promotion assignment as a bounded popup matching Manage promotions, with Cancel and Save — browser-verified staged save/cancel/persist
-- [ ] Polish the media library with cleaner Drive-like navigation, icons, toolbar, and asset cards
+- [x] Polish the media library: search + type filter in one toolbar row, hover-revealed card actions, clearer drop wording
 - [ ] Rework promotion create/edit into the established split layout with controls left and live preview right
 - [ ] Verify all three workflows at desktop and narrow widths
