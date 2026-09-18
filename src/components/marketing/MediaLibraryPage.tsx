@@ -244,6 +244,19 @@ export function MediaLibraryPage() {
                 className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-[13px] text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand focus:ring-2 focus:ring-brand/20"
               />
             </div>
+            <div className="flex gap-1 rounded-md bg-muted p-1 text-[12.5px]">
+              {TYPES.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setType(t)}
+                  className={`rounded px-3 py-1.5 font-medium capitalize transition-colors ${
+                    type === t ? "bg-card text-card-foreground shadow-card" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t === "all" ? "All files" : `${t}s`}
+                </button>
+              ))}
+            </div>
             <input
               ref={fileRef}
               type="file"
@@ -254,20 +267,6 @@ export function MediaLibraryPage() {
                 e.target.value = "";
               }}
             />
-          </div>
-
-          <div className="mt-3 flex gap-1 rounded-md bg-muted p-1 text-[12.5px]">
-            {TYPES.map((t) => (
-              <button
-                key={t}
-                onClick={() => setType(t)}
-                className={`rounded px-3 py-1.5 font-medium capitalize transition-colors ${
-                  type === t ? "bg-card text-card-foreground shadow-card" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t === "all" ? "All files" : `${t}s`}
-              </button>
-            ))}
           </div>
 
           <div
@@ -296,7 +295,7 @@ export function MediaLibraryPage() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[13px] font-semibold text-foreground">
-                  Drop files into {folder === "All" ? folders[0] : folder}
+                  Drop files to upload{folder !== "All" ? ` into ${folder}` : ""}
                 </span>
                 <span className="mt-0.5 block text-[11.5px] text-muted-foreground">
                   Or click to browse images, videos, and documents
@@ -336,31 +335,33 @@ export function MediaLibraryPage() {
                         <button
                           onDoubleClick={() => setRenamingItem(m.id)}
                           className="block w-full truncate text-left text-[12.5px] font-medium text-card-foreground"
-                          title="Double-click to rename"
+                          title={`${m.name} — double-click to rename`}
                         >
                           {m.name}
                         </button>
                       )}
-                      <p className="truncate text-[11px] text-muted-foreground">
+                      <p className="truncate text-[11px] text-muted-foreground" title={m.name}>
                         {m.folder} · {m.size}
                         {m.dims ? ` · ${m.dims}` : ""}
                       </p>
                     </div>
                     <button
                       aria-label={`Rename ${m.name}`}
+                      title="Rename"
                       onClick={() => setRenamingItem(m.id)}
-                      className="text-muted-foreground/60 transition-colors hover:text-foreground"
+                      className="text-muted-foreground/0 transition-colors group-hover:text-muted-foreground/80 hover:!text-foreground"
                     >
                       <Pencil size={14} />
                     </button>
                     <button
                       aria-label={`Delete ${m.name}`}
+                      title="Delete"
                       onClick={() =>
                         mutate((d) => {
                           d.media = d.media.filter((x) => x.id !== m.id);
                         })
                       }
-                      className="text-muted-foreground/60 transition-colors hover:text-destructive"
+                      className="text-muted-foreground/0 transition-colors group-hover:text-muted-foreground/80 hover:!text-destructive"
                     >
                       <Trash2 size={15} />
                     </button>
