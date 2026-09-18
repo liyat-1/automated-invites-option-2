@@ -229,43 +229,51 @@ export function PromotionAssignOverlay({
             />
 
             <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5">
-              {available.map((campaign) => {
-                const free = AUDIENCES.filter(({ key }) => !variantPromotionId(campaign, key));
-                const taken = AUDIENCES.filter(({ key }) => variantPromotionId(campaign, key));
-                return (
-                  <article
-                    key={campaign.id}
-                    draggable
-                    onDragStart={(event) => {
-                      event.dataTransfer.setData(CAMPAIGN_DRAG_TYPE, campaign.id);
-                      event.dataTransfer.setData("text/plain", campaign.id);
-                      event.dataTransfer.effectAllowed = "copy";
-                      setDragging(campaign);
-                    }}
-                    onDragEnd={() => {
-                      setDragging(null);
-                      setOverState(null);
-                    }}
-                    onClick={() => assignFree(campaign)}
-                    className={`cursor-grab rounded-md border bg-background px-2.5 py-2 shadow-sm transition-colors active:cursor-grabbing ${
-                      dragging?.id === campaign.id ? "border-brand bg-brand-soft" : "border-border hover:border-brand/45"
-                    }`}
-                  >
-                    <p className="flex items-center gap-1.5 truncate text-[12px] font-medium text-card-foreground">
-                      <GripVertical size={12} className="shrink-0 text-muted-foreground" />
-                      <span className="truncate">{campaign.name}</span>
-                    </p>
-                    <p className="truncate pl-[18px] text-[10.5px] text-muted-foreground">
-                      {GROUP_META[campaign.group].title}
-                    </p>
-                    <p className="truncate pl-[18px] text-[10.5px] text-muted-foreground">
-                      {free.map((a) => a.label).join(" + ")} available
-                      {taken.length > 0 &&
-                        ` · ${taken.map((a) => a.label).join(", ")} on ${blockedBy(draftState, campaign, taken[0].key, promotion.id)}`}
-                    </p>
-                  </article>
-                );
-              })}
+              {available.map((campaign) => (
+                <article
+                  key={campaign.id}
+                  draggable
+                  onDragStart={(event) => {
+                    event.dataTransfer.setData(CAMPAIGN_DRAG_TYPE, campaign.id);
+                    event.dataTransfer.setData("text/plain", campaign.id);
+                    event.dataTransfer.effectAllowed = "copy";
+                    setDragging(campaign);
+                  }}
+                  onDragEnd={() => {
+                    setDragging(null);
+                    setOverState(null);
+                  }}
+                  onClick={() => assignFree(campaign)}
+                  className={`cursor-grab rounded-md border bg-background px-2.5 py-2 shadow-sm transition-colors active:cursor-grabbing ${
+                    dragging?.id === campaign.id ? "border-brand bg-brand-soft" : "border-border hover:border-brand/45"
+                  }`}
+                >
+                  <p className="flex items-center gap-1.5 truncate text-[12px] font-medium text-card-foreground">
+                    <GripVertical size={12} className="shrink-0 text-muted-foreground" />
+                    <span className="truncate">{campaign.name}</span>
+                  </p>
+                  <p className="truncate pl-[18px] text-[10.5px] text-muted-foreground">
+                    {GROUP_META[campaign.group].title}
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap gap-1 pl-[18px]">
+                    {AUDIENCES.map(({ key }) => {
+                      const blocker = blockedBy(draftState, campaign, key, promotion.id);
+                      return (
+                        <SegmentPill
+                          key={key}
+                          audience={key}
+                          state={blocker ? "erased" : "free"}
+                          title={
+                            blocker
+                              ? `${AUDIENCE_LABEL[key]} guests already carry “${blocker}” on this campaign`
+                              : `${AUDIENCE_LABEL[key]} guests are free on this campaign`
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                </article>
+              ))}
               {available.length === 0 && (
                 <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-[11px] text-muted-foreground">
                   Drop here to remove this offer
@@ -371,20 +379,22 @@ function AssignedRow({
         </button>
       </div>
       <div className="mt-1.5 flex flex-wrap gap-1.5 pl-[18px]">
-        {AUDIENCES.map(({ key, label }) => {
+        {AUDIENCES.map(({ key }) => {
           const blocker = blockedBy(state, campaign, key, promotion.id);
           return (
-            <SegmentToggle
+            <SegmentPill
               key={key}
-              on={on[key]}
-              label={label}
+              audience={key}
+              state={on[key] ? "on" : "erased"}
               disabled={Boolean(blocker)}
               title={
                 blocker
-                  ? `${label} guests already use “${blocker}” on this campaign. One promotion per guest segment.`
-                  : undefined
+                  ? `${AUDIENCE_LABEL[key]} guests already use “${blocker}” on this campaign. One promotion per guest segment.`
+                  : on[key]
+                    ? `${AUDIENCE_LABEL[key]} guests receive this offer — untick to give them a different one`
+                    : `${AUDIENCE_LABEL[key]} guests are free again — tick to give them this offer`
               }
-               onChange={(value) => onChange(campaign.id, key, value ? promotion.id : null)}
+              onChange={(value) => onChange(campaign.id, key, value ? promotion.id : null)}
             />
           );
         })}
