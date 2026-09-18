@@ -50,7 +50,6 @@ export function PromotionAssignOverlay({
 }) {
   const state = useMarketing();
   const [campaigns, setCampaigns] = useState<MarketingCampaign[]>(() => JSON.parse(JSON.stringify(state.campaigns)) as MarketingCampaign[]);
-  console.log("render campaigns count", campaigns.length, "first id", campaigns[0]?.id, campaigns[0]?.variants.direct.promotionId, campaigns[0]?.variants.ota.promotionId);
   const [query, setQuery] = useState("");
   const [dragging, setDragging] = useState<MarketingCampaign | null>(null);
   const [bulk, setBulk] = useState<BulkScope | null>(null);
