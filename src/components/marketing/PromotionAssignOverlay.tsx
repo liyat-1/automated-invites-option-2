@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import { Check, FileStack, GripVertical, Info, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BulkDragChips } from "./BulkDragChips";
+import { SegmentPill } from "./SegmentPill";
 import {
+  AUDIENCE_LABEL,
   CAMPAIGN_BULK_DRAG_TYPE,
   CAMPAIGN_DRAG_TYPE,
   GROUP_META,
@@ -32,47 +34,6 @@ function blockedBy(state: MarketingState, campaign: MarketingCampaign, audience:
   return state.promotions.find((p) => p.id === id)?.name ?? "another promotion";
 }
 
-/** Small square checkbox used for the guest-segment toggles. */
-function SegmentToggle({
-  on,
-  label,
-  disabled,
-  title,
-  onChange,
-}: {
-  on: boolean;
-  label: string;
-  disabled?: boolean;
-  title?: string;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      title={title}
-      onClick={() => onChange(!on)}
-      aria-pressed={on}
-      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors ${
-        disabled
-          ? "cursor-not-allowed border-dashed border-border bg-muted/50 text-muted-foreground"
-          : on
-            ? "border-brand/45 bg-brand-soft text-brand"
-            : "border-border bg-background text-muted-foreground hover:border-brand/30"
-      }`}
-    >
-      <span
-        className={`grid size-3.5 place-items-center rounded-[3px] border ${
-          on ? "border-brand bg-brand text-brand-foreground" : "border-muted-foreground/45"
-        }`}
-      >
-        {on && <Check size={9} strokeWidth={3.5} />}
-      </span>
-      {label}
-      {disabled && <Info size={11} className="text-muted-foreground" />}
-    </button>
-  );
-}
 
 /**
  * Assignment board for one promotion, built like the media board: a fixed
@@ -197,7 +158,7 @@ export function PromotionAssignOverlay({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/70 p-2 sm:p-4" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section role="dialog" aria-modal="true" aria-labelledby="promotion-assignment-title" className="flex h-[90vh] max-h-[900px] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-border bg-canvas shadow-float">
+      <section role="dialog" aria-modal="true" aria-labelledby="promotion-assignment-title" className="flex h-full max-h-none w-full max-w-none flex-col overflow-hidden rounded-lg border border-border bg-canvas shadow-float">
       <header className="flex items-center gap-3 border-b border-border bg-card px-4 py-3 sm:px-6">
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">Assign campaigns</p>
