@@ -12,14 +12,14 @@ export const TYPE_ICON: Record<MediaType, React.ComponentType<{ size?: number; c
 const extOf = (name: string) => (name.split(".").pop() ?? "file").toUpperCase();
 
 const DOC_TONE: Record<string, string> = {
-  PDF: "#dc2626",
-  DOC: "#2563eb",
-  DOCX: "#2563eb",
-  XLS: "#16a34a",
-  XLSX: "#16a34a",
-  CSV: "#15803d",
-  PPT: "#ea580c",
-  PPTX: "#ea580c",
+  PDF: "bg-destructive text-destructive-foreground",
+  DOC: "bg-brand text-brand-foreground",
+  DOCX: "bg-brand text-brand-foreground",
+  XLS: "bg-chart-2 text-primary-foreground",
+  XLSX: "bg-chart-2 text-primary-foreground",
+  CSV: "bg-chart-2 text-primary-foreground",
+  PPT: "bg-warning text-primary-foreground",
+  PPTX: "bg-warning text-primary-foreground",
 };
 
 /** Clean asset thumbnail used consistently across the library and editors. */
@@ -70,25 +70,20 @@ export function MediaThumb({ item, className = "" }: { item: MediaItem; classNam
   }
 
   const ext = extOf(item.name);
-  const tone = DOC_TONE[ext] ?? "#52525b";
+  const tone = DOC_TONE[ext] ?? "bg-foreground text-background";
   return (
-    <div className={`relative grid size-full place-items-center overflow-hidden bg-muted p-3 ${className}`}>
-      <div className="relative h-full w-[68%] max-w-[96px] overflow-hidden rounded-sm bg-card shadow-md ring-1 ring-border/70">
-        <div className="h-3.5 w-full" style={{ background: tone }} />
-        <div className="absolute right-0 top-3.5 size-3.5" style={{ background: "#e4e4e7", clipPath: "polygon(100% 0, 0 0, 100% 100%)" }} />
-        <div className="space-y-1.5 px-2.5 pt-3">
-          <div className="h-1 w-3/4 rounded-sm bg-muted-foreground/35" />
-          <div className="h-1 rounded-sm bg-muted-foreground/20" />
-          <div className="h-1 rounded-sm bg-muted-foreground/20" />
-          <div className="h-1 w-2/3 rounded-sm bg-muted-foreground/20" />
-          <div className="h-1 w-1/2 rounded-sm bg-muted-foreground/20" />
+    <div className={`relative grid size-full place-items-center overflow-hidden bg-muted/70 p-5 ${className}`}>
+      <div className="relative flex h-[78%] min-h-24 w-[62%] max-w-28 flex-col overflow-hidden rounded-md border border-border bg-card shadow-card">
+        <div className={`flex h-9 items-center justify-between px-3 ${tone}`}>
+          <FileText size={17} strokeWidth={1.8} />
+          <span className="text-[10px] font-bold">{ext}</span>
         </div>
-        <span
-          className="absolute bottom-1.5 left-2 rounded px-1.5 py-0.5 text-[8.5px] font-bold tracking-wide text-white"
-          style={{ background: tone }}
-        >
-          {ext}
-        </span>
+        <div className="flex flex-1 flex-col justify-center gap-2 px-3">
+          <div className="h-1.5 w-4/5 rounded-sm bg-muted-foreground/30" />
+          <div className="h-1.5 rounded-sm bg-muted-foreground/15" />
+          <div className="h-1.5 rounded-sm bg-muted-foreground/15" />
+          <div className="h-1.5 w-3/5 rounded-sm bg-muted-foreground/15" />
+        </div>
       </div>
     </div>
   );

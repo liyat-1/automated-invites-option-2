@@ -150,3 +150,9 @@
 - [x] Polish the media library: search + type filter in one toolbar row, hover-revealed card actions, clearer drop wording
 - [x] Rework promotion create/edit into the established split layout: bounded popup, controls left, sticky live guest preview right
 - [x] Verified all three workflows at desktop and narrow widths — no console errors, typecheck clean
+
+## Media workspace redesign
+
+- [x] Rebuild the media library as a clean OneDrive-style workspace with a fixed folder rail
+- [x] Enlarge file tiles and give documents and videos equal visual weight to image assets
+- [ ] Verify scrolling, folders, file actions, uploads, and responsive layouts
