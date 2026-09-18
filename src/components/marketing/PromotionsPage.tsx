@@ -24,10 +24,11 @@ import {
   promotionValidity,
   uid,
   useMarketing,
+  type Promotion,
 } from "@/lib/marketing";
 
 /** Live banner preview scaled to always fit inside the card thumbnail. */
-function BannerThumb({ promotion }: { promotion: (typeof promotions)[number] }) {
+function BannerThumb({ promotion }: { promotion: Promotion }) {
   const inner = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.6);
   useLayoutEffect(() => {
