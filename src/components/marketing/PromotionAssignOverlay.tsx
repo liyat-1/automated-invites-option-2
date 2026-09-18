@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Check, FileStack, GripVertical, Info, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BulkDragChips } from "./BulkDragChips";
@@ -7,7 +7,7 @@ import {
   CAMPAIGN_DRAG_TYPE,
   GROUP_META,
   promotionAudiencesOn,
-  setVariantPromotion,
+  mutate,
   useMarketing,
   variantPromotionId,
   type AudienceKey,
@@ -88,11 +88,34 @@ export function PromotionAssignOverlay({
   onClose: () => void;
 }) {
   const state = useMarketing();
-  const { campaigns } = state;
+  const [campaigns, setCampaigns] = useState<MarketingCampaign[]>(() => JSON.parse(JSON.stringify(state.campaigns)) as MarketingCampaign[]);
   const [query, setQuery] = useState("");
   const [dragging, setDragging] = useState<MarketingCampaign | null>(null);
   const [bulk, setBulk] = useState<BulkScope | null>(null);
   const [over, setOverState] = useState<CampaignGroup | -1 | null>(null);
+  const dirty = useMemo(() => JSON.stringify(campaigns) !== JSON.stringify(state.campaigns), [campaigns, state.campaigns]);
+  const draftState = { ...state, campaigns };
+
+  const updatePromotion = (campaignId: string, audience: AudienceKey, promotionId: string | null) => {
+    setCampaigns((current) => {
+      const next = JSON.parse(JSON.stringify(current)) as MarketingCampaign[];
+      const campaign = next.find((item) => item.id === campaignId);
+      if (!campaign) return current;
+      campaign.variants[audience].promotionMode = promotionId ? "custom" : "none";
+      campaign.variants[audience].promotionId = promotionId;
+      const any = variantPromotionId(campaign, "direct") ?? variantPromotionId(campaign, "ota");
+      campaign.promotionId = any;
+      campaign.promotionMode = any ? "custom" : "none";
+      return next;
+    });
+  };
+
+  const save = () => {
+    mutate((draft) => {
+      draft.campaigns = JSON.parse(JSON.stringify(campaigns)) as MarketingCampaign[];
+    });
+    onClose();
+  };
 
   const assignedIn = (group: CampaignGroup) =>
     campaigns.filter((c) => {
@@ -118,7 +141,7 @@ export function PromotionAssignOverlay({
   /** Attach the promotion to every guest segment still free on a campaign. */
   const assignFree = (campaign: MarketingCampaign) => {
     AUDIENCES.forEach(({ key }) => {
-      if (!variantPromotionId(campaign, key)) setVariantPromotion(campaign.id, key, promotion.id);
+      if (!variantPromotionId(campaign, key)) updatePromotion(campaign.id, key, promotion.id);
     });
   };
 
@@ -128,7 +151,7 @@ export function PromotionAssignOverlay({
     campaigns
       .filter((c) => audiences.some((a) => !variantPromotionId(c, a)))
       .forEach((c) => audiences.forEach((a) => {
-        if (!variantPromotionId(c, a)) setVariantPromotion(c.id, a, promotion.id);
+         if (!variantPromotionId(c, a)) updatePromotion(c.id, a, promotion.id);
       }));
   };
 
@@ -136,7 +159,7 @@ export function PromotionAssignOverlay({
   const unassign = (campaign: MarketingCampaign) => {
     const on = promotionAudiencesOn(campaign, promotion.id);
     AUDIENCES.forEach(({ key }) => {
-      if (on[key]) setVariantPromotion(campaign.id, key, null);
+      if (on[key]) updatePromotion(campaign.id, key, null);
     });
   };
 
@@ -155,7 +178,7 @@ export function PromotionAssignOverlay({
         const audiences = audiencesOf(scope);
         campaigns.forEach((c) =>
           audiences.forEach((a) => {
-            if (variantPromotionId(c, a) === promotion.id) setVariantPromotion(c.id, a, null);
+             if (variantPromotionId(c, a) === promotion.id) updatePromotion(c.id, a, null);
           }),
         );
       } else dropCollection(scope);
@@ -173,11 +196,12 @@ export function PromotionAssignOverlay({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-canvas">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/70 p-2 sm:p-4" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section role="dialog" aria-modal="true" aria-labelledby="promotion-assignment-title" className="flex h-[90vh] max-h-[900px] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-border bg-canvas shadow-float">
       <header className="flex items-center gap-3 border-b border-border bg-card px-4 py-3 sm:px-6">
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">Assign campaigns</p>
-          <h2 className="truncate text-[17px] font-semibold text-card-foreground">{promotion.name}</h2>
+          <h2 id="promotion-assignment-title" className="truncate text-[17px] font-semibold text-card-foreground">{promotion.name}</h2>
           <p className="truncate text-[11.5px] text-muted-foreground">
             {promotion.detail} · {promotion.code} · {totalAssigned} campaign{totalAssigned === 1 ? "" : "s"} carry this offer
           </p>
@@ -193,7 +217,7 @@ export function PromotionAssignOverlay({
         carries one offer per guest segment, so a segment already used by another offer stays locked here.
       </p>
 
-      <div className="flex min-h-0 flex-1 flex-col p-4 sm:p-5">
+       <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Assignment board</p>
           <p className="text-[11px] text-muted-foreground">Drag campaigns into a section · scroll for more sections</p>
@@ -276,7 +300,7 @@ export function PromotionAssignOverlay({
                     <p className="truncate pl-[18px] text-[10.5px] text-muted-foreground">
                       {free.map((a) => a.label).join(" + ")} available
                       {taken.length > 0 &&
-                        ` · ${taken.map((a) => a.label).join(", ")} on ${blockedBy(state, campaign, taken[0].key, promotion.id)}`}
+                       {taken.map((a) => a.label).join(", ")} on ${blockedBy(draftState, campaign, taken[0].key, promotion.id)}`}
                     </p>
                   </article>
                 );
@@ -319,7 +343,7 @@ export function PromotionAssignOverlay({
 
                   <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5">
                     {list.map((campaign) => (
-                      <AssignedRow key={campaign.id} campaign={campaign} promotion={promotion} state={state} />
+                       <AssignedRow key={campaign.id} campaign={campaign} promotion={promotion} state={draftState} onChange={updatePromotion} />
                     ))}
                     {list.length === 0 && (
                       <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-[11px] text-muted-foreground">
@@ -331,7 +355,15 @@ export function PromotionAssignOverlay({
               );
             })}
           </div>
-        </div>
+       <footer className="flex items-center justify-between gap-3 border-t border-border bg-card px-4 py-3 sm:px-6">
+         <p className="text-[11.5px] text-muted-foreground">{dirty ? "Unsaved assignment changes" : "No assignment changes"}</p>
+         <div className="flex items-center gap-2">
+           <Button variant="outline" onClick={onClose}>Cancel</Button>
+           <Button variant="brand" disabled={!dirty} onClick={save}><Check size={14} />Save assignment</Button>
+         </div>
+       </footer>
+      </section>
+     </div>
       </div>
     </div>
   );
@@ -341,15 +373,17 @@ function AssignedRow({
   campaign,
   promotion,
   state,
+  onChange,
 }: {
   campaign: MarketingCampaign;
   promotion: Promotion;
   state: MarketingState;
+  onChange: (campaignId: string, audience: AudienceKey, promotionId: string | null) => void;
 }) {
   const on = promotionAudiencesOn(campaign, promotion.id);
   const removeAll = () =>
     AUDIENCES.forEach(({ key }) => {
-      if (on[key]) setVariantPromotion(campaign.id, key, null);
+      if (on[key]) onChange(campaign.id, key, null);
     });
 
   return (
@@ -388,7 +422,7 @@ function AssignedRow({
                   ? `${label} guests already use “${blocker}” on this campaign. One promotion per guest segment.`
                   : undefined
               }
-              onChange={(value) => setVariantPromotion(campaign.id, key, value ? promotion.id : null)}
+               onChange={(value) => onChange(campaign.id, key, value ? promotion.id : null)}
             />
           );
         })}
