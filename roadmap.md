@@ -148,5 +148,5 @@
 
 - [x] Restyle promotion assignment as a bounded popup matching Manage promotions, with Cancel and Save — browser-verified staged save/cancel/persist
 - [x] Polish the media library: search + type filter in one toolbar row, hover-revealed card actions, clearer drop wording
-- [ ] Rework promotion create/edit into the established split layout with controls left and live preview right
-- [ ] Verify all three workflows at desktop and narrow widths
+- [x] Rework promotion create/edit into the established split layout: bounded popup, controls left, sticky live guest preview right
+- [x] Verified all three workflows at desktop and narrow widths — no console errors, typecheck clean
