@@ -119,6 +119,15 @@ export function MediaPicker({
   const [dragging, setDragging] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   const upload = (files: FileList | null) => {
     if (!files?.length) return;
     mutate((draft) => Array.from(files).forEach((file) => draft.media.unshift({
@@ -141,7 +150,15 @@ export function MediaPicker({
     .filter((m) => m.name.toLowerCase().includes(query));
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-foreground/45 p-4 backdrop-blur-[2px]">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Media library"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-foreground/45 p-4 backdrop-blur-[2px]"
+    >
       <div className="flex max-h-[82vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-border bg-card shadow-float">
         <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-3.5">
           <div className="min-w-0">
