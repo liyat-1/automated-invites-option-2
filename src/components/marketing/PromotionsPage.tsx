@@ -124,9 +124,6 @@ export function PromotionsPage() {
     view = previous;
     return total;
   };
-  const codeCount = (key: CodeFilter) =>
-    key === "all" ? promotions.length : promotions.filter((p) => (p.codeType ?? "promo") === key).length;
-
   const active = promotions.find((promotion) => promotion.id === managing) ?? null;
   const editTarget = promotions.find((promotion) => promotion.id === editingId) ?? null;
   const deleteTarget = promotions.find((promotion) => promotion.id === deletingId) ?? null;
