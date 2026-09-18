@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, FileStack, GripVertical, Info, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { MediaThumb } from "./MediaPicker";
+import { SegmentPill } from "./SegmentPill";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BulkDragChips } from "./BulkDragChips";
 import {
+  AUDIENCE_LABEL,
   CAMPAIGN_BULK_DRAG_TYPE,
   CAMPAIGN_DRAG_TYPE,
   attachMediaToCampaign,
@@ -98,7 +100,7 @@ function SegmentChecks({
                   ? `${AUDIENCE_LABEL[audience]} guests receive this file — untick to make this segment available again`
                   : `${AUDIENCE_LABEL[audience]} guests are free again — tick to send them this file`
               }
-              onClick={(value) => onToggle(audience, value)}
+              onClick={(value: boolean) => onToggle(audience, value)}
             />
           );
         })}
