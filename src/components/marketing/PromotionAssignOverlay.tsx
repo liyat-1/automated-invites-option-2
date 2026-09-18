@@ -99,7 +99,6 @@ export function PromotionAssignOverlay({
 
   /** Attach the promotion to every guest segment still free on a campaign. */
   const assignFree = (campaign: MarketingCampaign) => {
-    console.log("assignFree", campaign.id, campaign.name);
     AUDIENCES.forEach(({ key }) => {
       if (!variantPromotionId(campaign, key)) updatePromotion(campaign.id, key, promotion.id);
     });
