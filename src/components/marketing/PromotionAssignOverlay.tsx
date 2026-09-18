@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Check, GripVertical, Info, Plus, Search, X } from "lucide-react";
+import { Check, FileStack, GripVertical, Info, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BulkDragChips } from "./BulkDragChips";
 import {
+  CAMPAIGN_BULK_DRAG_TYPE,
   CAMPAIGN_DRAG_TYPE,
   GROUP_META,
   promotionAudiencesOn,
@@ -9,6 +11,7 @@ import {
   useMarketing,
   variantPromotionId,
   type AudienceKey,
+  type BulkScope,
   type CampaignGroup,
   type MarketingCampaign,
   type MarketingState,
@@ -20,6 +23,7 @@ const AUDIENCES: { key: AudienceKey; label: string }[] = [
   { key: "direct", label: "Direct" },
   { key: "ota", label: "OTA" },
 ];
+const audiencesOf = (scope: BulkScope): AudienceKey[] => (scope === "both" ? ["direct", "ota"] : [scope]);
 
 /** Name of the promotion blocking a guest segment on this campaign, if any. */
 function blockedBy(state: MarketingState, campaign: MarketingCampaign, audience: AudienceKey, promotionId: string) {
@@ -71,9 +75,10 @@ function SegmentToggle({
 }
 
 /**
- * Assignment surface for one promotion. Each automated message section has an
- * Assign campaign button; guest segments already used by another promotion on
- * the same campaign stay locked and explain themselves.
+ * Assignment board for one promotion, built like the media board: a fixed
+ * column of available campaigns beside the three message sections. Bulk chips
+ * drag every free campaign in at once, and guest segments already taken by
+ * another promotion stay locked and explain themselves.
  */
 export function PromotionAssignOverlay({
   promotion,
@@ -84,16 +89,21 @@ export function PromotionAssignOverlay({
 }) {
   const state = useMarketing();
   const { campaigns } = state;
-  const [drawer, setDrawer] = useState(false);
   const [query, setQuery] = useState("");
   const [dragging, setDragging] = useState<MarketingCampaign | null>(null);
-  const [over, setOver] = useState<CampaignGroup | null>(null);
+  const [bulk, setBulk] = useState<BulkScope | null>(null);
+  const [over, setOver<CampaignGroup | -1 | null>, setOverState] = useState<CampaignGroup | -1 | null>(null);
 
   const assignedIn = (group: CampaignGroup) =>
     campaigns.filter((c) => {
       const on = promotionAudiencesOn(c, promotion.id);
       return c.group === group && (on.direct || on.ota);
     });
+
+  const totalAssigned = campaigns.filter((c) => {
+    const on = promotionAudiencesOn(c, promotion.id);
+    return on.direct || on.ota;
+  }).length;
 
   const isFree = (c: MarketingCampaign) => AUDIENCES.some(({ key }) => !variantPromotionId(c, key));
   const q = query.trim().toLowerCase();
@@ -105,25 +115,62 @@ export function PromotionAssignOverlay({
       (!q || c.name.toLowerCase().includes(q)),
   );
 
+  /** Attach the promotion to every guest segment still free on a campaign. */
   const assignFree = (campaign: MarketingCampaign) => {
     AUDIENCES.forEach(({ key }) => {
       if (!variantPromotionId(campaign, key)) setVariantPromotion(campaign.id, key, promotion.id);
     });
   };
 
-  const allow = (event: React.DragEvent, group: CampaignGroup) => {
-    if (!dragging || dragging.group !== group) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "copy";
-    setOver(group);
+  /** Drop a whole collection: only the free segments of each campaign join. */
+  const dropCollection = (scope: BulkScope) => {
+    const audiences = audiencesOf(scope);
+    campaigns
+      .filter((c) => audiences.some((a) => !variantPromotionId(c, a)))
+      .forEach((c) => audiences.forEach((a) => {
+        if (!variantPromotionId(c, a)) setVariantPromotion(c.id, a, promotion.id);
+      }));
   };
 
-  const drop = (event: React.DragEvent, group: CampaignGroup) => {
-    if (!dragging || dragging.group !== group) return;
+  /** Dragging a campaign back onto the available column clears this offer. */
+  const unassign = (campaign: MarketingCampaign) => {
+    const on = promotionAudiencesOn(campaign, promotion.id);
+    AUDIENCES.forEach(({ key }) => {
+      if (on[key]) setVariantPromotion(campaign.id, key, null);
+    });
+  };
+
+  const allow = (event: React.DragEvent) => {
+    const types = event.dataTransfer.types;
+    if (!dragging && !bulk && !types.includes(CAMPAIGN_DRAG_TYPE) && !types.includes(CAMPAIGN_BULK_DRAG_TYPE)) return;
     event.preventDefault();
-    assignFree(dragging);
+    event.dataTransfer.dropEffect = "copy";
+    setOver(over);
+  };
+
+  const drop = (event: React.DragEvent, group: CampaignGroup | -1) => {
+    event.preventDefault();
+    const scope = (event.dataTransfer.getData(CAMPAIGN_BULK_DRAG_TYPE) as BulkScope) || bulk;
+    if (scope) {
+      if (group === -1) {
+        const audiences = audiencesOf(scope);
+        campaigns.forEach((c) =>
+          audiences.forEach((a) => {
+            if (variantPromotionId(c, a) === promotion.id) setVariantPromotion(c.id, a, null);
+          }),
+        );
+      } else dropCollection(scope);
+    } else {
+      const id =
+        event.dataTransfer.getData(CAMPAIGN_DRAG_TYPE) ||
+        (event.dataTransfer.getData("text/plain").startsWith("bulk:") ? "" : event.dataTransfer.getData("text/plain")) ||
+        dragging?.id;
+      const campaign = campaigns.find((c) => c.id === id);
+      if (campaign) (group === -1 ? unassign : assignFree)(campaign);
+    }
     setDragging(null);
-    setOver(null);
+    setBulk(null);
+    setOverState(null);
   };
 
   return (
@@ -133,13 +180,9 @@ export function PromotionAssignOverlay({
           <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">Assign campaigns</p>
           <h2 className="truncate text-[17px] font-semibold text-card-foreground">{promotion.name}</h2>
           <p className="truncate text-[11.5px] text-muted-foreground">
-            {promotion.detail} · {promotion.code}
+            {promotion.detail} · {promotion.code} · {totalAssigned} campaign{totalAssigned === 1 ? "" : "s"} carry this offer
           </p>
         </div>
-        <Button variant={drawer ? "outline" : "brand"} size="sm" onClick={() => setDrawer((v) => !v)}>
-          {drawer ? <X size={13} /> : <Plus size={13} />}
-          {drawer ? "Close campaigns" : "Assign campaign"}
-        </Button>
         <Button variant="ghost" size="icon" className="size-8" aria-label="Close" onClick={onClose}>
           <X size={16} />
         </Button>
@@ -147,82 +190,61 @@ export function PromotionAssignOverlay({
 
       <p className="flex items-start gap-2 border-b border-border bg-brand-soft/50 px-4 py-2 text-[11.5px] text-muted-foreground sm:px-6">
         <Info size={13} className="mt-[1px] shrink-0 text-brand" />
-        Open the campaign list and drag a campaign into its message section. Each campaign carries one offer per guest
-        segment, so if Direct is already used by another offer, only OTA stays available here.
+        Drag campaigns into a message section — or use the bulk chips to add every free campaign at once. Each campaign
+        carries one offer per guest segment, so a segment already used by another offer stays locked here.
       </p>
 
-      <div className="flex min-h-0 flex-1">
-        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
-          <div className="grid items-start gap-4 md:grid-cols-3">
-            {GROUPS.map((group) => {
-              const list = assignedIn(group);
-              const armed = Boolean(dragging && dragging.group === group);
-              return (
-                <section
-                  key={group}
-                  onDragOver={(event) => allow(event, group)}
-                  onDragLeave={() => setOver((c) => (c === group ? null : c))}
-                  onDrop={(event) => drop(event, group)}
-                  className={`flex flex-col rounded-lg border-2 border-dashed bg-card p-3 shadow-card transition-colors ${
-                    over === group
-                      ? "border-brand bg-brand-soft"
-                      : armed
-                        ? "border-brand/45"
-                        : "border-border"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="min-w-0 truncate text-[12.5px] font-semibold text-card-foreground">
-                      {GROUP_META[group].title}
-                    </p>
-                    <span className="shrink-0 rounded-sm bg-muted px-2 py-0.5 text-[10.5px] font-semibold text-muted-foreground">
-                      {list.length}
-                    </span>
-                  </div>
-
-                  <div className="mt-2.5 space-y-2">
-                    {list.map((campaign) => (
-                      <AssignedRow key={campaign.id} campaign={campaign} promotion={promotion} state={state} />
-                    ))}
-                    {list.length === 0 && (
-                      <p className="rounded-md border border-dashed border-border px-2 py-6 text-center text-[11.5px] text-muted-foreground">
-                        {armed ? "Drop the campaign here" : "Drag a campaign here"}
-                      </p>
-                    )}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
+      <div className="flex min-h-0 flex-1 flex-col p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Assignment board</p>
+          <p className="text-[11px] text-muted-foreground">Drag campaigns into a section · scroll for more sections</p>
         </div>
 
-        {drawer && (
-          <aside className="flex w-[280px] shrink-0 flex-col border-l border-border bg-card p-3">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[12.5px] font-semibold text-card-foreground">Campaigns</p>
-              <button
-                type="button"
-                aria-label="Close campaign list"
-                onClick={() => setDrawer(false)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X size={14} />
-              </button>
+        <div className="mt-3 flex min-h-0 flex-1 gap-4">
+          {/* Fixed available-campaigns column */}
+          <section
+            onDragOver={(event) => {
+              allow(event);
+              setOverState(-1);
+            }}
+            onDragLeave={() => setOverState((c) => (c === -1 ? null : c))}
+            onDrop={(event) => drop(event, -1)}
+            className={`flex w-[250px] shrink-0 flex-col rounded-xl border p-4 transition-colors sm:w-[270px] ${
+              over === -1 ? "border-brand bg-brand-soft" : "border-border bg-card"
+            }`}
+          >
+            <div className="flex items-start gap-2 border-b border-border pb-2.5">
+              <span className="grid size-8 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground">
+                <FileStack size={15} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[12.5px] font-semibold text-card-foreground">Available campaigns</p>
+                <p className="mt-0.5 text-[10.5px] text-muted-foreground">
+                  {available.length} campaigns with a free guest segment
+                </p>
+              </div>
             </div>
-            <div className="relative mt-2">
-              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+
+            <div className="relative mt-2.5">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
-                autoFocus
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search campaigns"
-                className="w-full rounded-sm border border-input bg-background py-1.5 pl-8 pr-2.5 text-[12px] outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                className="w-full rounded-md border border-input bg-background py-1.5 pl-8 pr-2.5 text-[12px] outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
               />
             </div>
-            <p className="mt-2 text-[10.5px] text-muted-foreground">
-              Drag a card into its message section, or click it to add.
-            </p>
-            <div className="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
+
+            <BulkDragChips
+              count={available.length}
+              onDragStart={(scope) => setBulk(scope)}
+              onDragEnd={() => {
+                setBulk(null);
+                setOverState(null);
+              }}
+            />
+
+            <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5">
               {available.map((campaign) => {
                 const free = AUDIENCES.filter(({ key }) => !variantPromotionId(campaign, key));
                 const taken = AUDIENCES.filter(({ key }) => variantPromotionId(campaign, key));
@@ -238,10 +260,10 @@ export function PromotionAssignOverlay({
                     }}
                     onDragEnd={() => {
                       setDragging(null);
-                      setOver(null);
+                      setOverState(null);
                     }}
                     onClick={() => assignFree(campaign)}
-                    className={`cursor-grab rounded-sm border bg-background px-2.5 py-2 transition-colors active:cursor-grabbing ${
+                    className={`cursor-grab rounded-md border bg-background px-2.5 py-2 shadow-sm transition-colors active:cursor-grabbing ${
                       dragging?.id === campaign.id ? "border-brand bg-brand-soft" : "border-border hover:border-brand/45"
                     }`}
                   >
@@ -249,7 +271,7 @@ export function PromotionAssignOverlay({
                       <GripVertical size={12} className="shrink-0 text-muted-foreground" />
                       <span className="truncate">{campaign.name}</span>
                     </p>
-                    <p className="mt-0.5 truncate pl-[18px] text-[10.5px] text-muted-foreground">
+                    <p className="truncate pl-[18px] text-[10.5px] text-muted-foreground">
                       {GROUP_META[campaign.group].title}
                     </p>
                     <p className="truncate pl-[18px] text-[10.5px] text-muted-foreground">
@@ -261,16 +283,56 @@ export function PromotionAssignOverlay({
                 );
               })}
               {available.length === 0 && (
-                <p className="px-1 py-4 text-center text-[11.5px] text-muted-foreground">
-                  No campaigns left to assign.
+                <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-[11px] text-muted-foreground">
+                  Drop here to remove this offer
                 </p>
               )}
             </div>
-            <Button variant="brand" size="sm" className="mt-2.5" onClick={onClose}>
-              Done
-            </Button>
-          </aside>
-        )}
+          </section>
+
+          {/* Horizontally scrollable message sections */}
+          <div className="flex min-h-0 min-w-0 flex-1 gap-4 overflow-x-auto pb-1">
+            {GROUPS.map((group) => {
+              const list = assignedIn(group);
+              return (
+                <section
+                  key={group}
+                  onDragOver={(event) => {
+                    allow(event);
+                    setOverState(group);
+                  }}
+                  onDragLeave={() => setOverState((c) => (c === group ? null : c))}
+                  onDrop={(event) => drop(event, group)}
+                  className={`flex w-[290px] shrink-0 flex-col rounded-xl border p-4 transition-colors ${
+                    over === group
+                      ? "border-brand bg-brand-soft ring-2 ring-brand/30"
+                      : "border-brand/25 bg-brand-soft/20"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2 border-b border-border pb-2.5">
+                    <p className="min-w-0 truncate text-[12.5px] font-semibold text-card-foreground">
+                      {GROUP_META[group].title}
+                    </p>
+                    <span className="shrink-0 rounded-sm bg-muted px-2 py-0.5 text-[10.5px] font-semibold text-muted-foreground">
+                      {list.length}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5">
+                    {list.map((campaign) => (
+                      <AssignedRow key={campaign.id} campaign={campaign} promotion={promotion} state={state} />
+                    ))}
+                    {list.length === 0 && (
+                      <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-[11px] text-muted-foreground">
+                        Drag a campaign here
+                      </p>
+                    )}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -292,8 +354,17 @@ function AssignedRow({
     });
 
   return (
-    <div className="rounded-md border border-border bg-background px-2.5 py-2">
+    <div
+      draggable
+      onDragStart={(event) => {
+        event.dataTransfer.setData(CAMPAIGN_DRAG_TYPE, campaign.id);
+        event.dataTransfer.setData("text/plain", campaign.id);
+        event.dataTransfer.effectAllowed = "copy";
+      }}
+      className="cursor-grab rounded-md border border-border bg-background px-2.5 py-2 active:cursor-grabbing"
+    >
       <div className="flex items-start gap-2">
+        <GripVertical size={12} className="mt-0.5 shrink-0 text-muted-foreground/60" />
         <p className="min-w-0 flex-1 truncate text-[12px] font-medium text-card-foreground">{campaign.name}</p>
         <button
           type="button"
@@ -304,7 +375,7 @@ function AssignedRow({
           <X size={13} />
         </button>
       </div>
-      <div className="mt-1.5 flex flex-wrap gap-1.5">
+      <div className="mt-1.5 flex flex-wrap gap-1.5 pl-[18px]">
         {AUDIENCES.map(({ key, label }) => {
           const blocker = blockedBy(state, campaign, key, promotion.id);
           return (
