@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image as ImageIcon, X } from "lucide-react";
+import { Gift, Image as ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmojiPicker } from "./EmojiPicker";
 import { MediaPicker } from "./MediaPicker";
@@ -211,6 +211,9 @@ export function PromotionEditorOverlay({ promotion, onClose }: { promotion?: Pro
     <div className="fixed inset-0 z-[60] grid place-items-center bg-foreground/70 p-2 sm:p-4" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <section role="dialog" aria-modal="true" aria-labelledby="promotion-editor-title" className="flex h-[92vh] max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-border bg-canvas shadow-float">
       <header className="flex items-center gap-3 border-b border-border bg-card px-4 py-3 sm:px-6">
+        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
+          <Gift size={20} />
+        </span>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">
             {editing ? "Edit promotion" : "New promotion"}

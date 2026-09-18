@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, FileStack, GripVertical, Info, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { MediaThumb } from "./MediaPicker";
+import { SegmentPill } from "./SegmentPill";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BulkDragChips } from "./BulkDragChips";
 import {
+  AUDIENCE_LABEL,
   CAMPAIGN_BULK_DRAG_TYPE,
   CAMPAIGN_DRAG_TYPE,
   attachMediaToCampaign,
@@ -71,40 +73,38 @@ function SegmentChecks({
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      className="flex cursor-grab items-center gap-2 rounded-md border border-border bg-background px-2.5 py-2 shadow-sm active:cursor-grabbing"
+      className="cursor-grab rounded-md border border-border bg-background px-2.5 py-2 shadow-sm active:cursor-grabbing"
     >
-      <GripVertical size={12} className="shrink-0 text-muted-foreground/60" />
-      <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-card-foreground">{campaign.name}</span>
-      {AUDIENCE_KEYS.map((audience) => {
-        const checked = audienceMediaIds(campaign, audience, channel).includes(mediaId);
-        return (
-          <label
-            key={audience}
-            className={`flex shrink-0 cursor-pointer items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition-colors ${
-              checked ? "border-brand/50 bg-brand-soft text-brand" : "border-border text-muted-foreground hover:border-brand/40"
-            }`}
-          >
-            <input
-              type="checkbox"
-              checked={checked}
-              onChange={(event) => onToggle(audience, event.target.checked)}
-              className="sr-only"
+      <div className="flex items-start gap-2">
+        <GripVertical size={12} className="mt-0.5 shrink-0 text-muted-foreground/60" />
+        <p className="min-w-0 flex-1 truncate text-[12px] font-medium text-card-foreground">{campaign.name}</p>
+        <button
+          type="button"
+          aria-label={`Remove ${campaign.name} from this file`}
+          onClick={onRemove}
+          className="shrink-0 text-muted-foreground hover:text-destructive"
+        >
+          <X size={13} />
+        </button>
+      </div>
+      <div className="mt-1.5 flex flex-wrap gap-1.5 pl-[18px]">
+        {AUDIENCE_KEYS.map((audience) => {
+          const checked = audienceMediaIds(campaign, audience, channel).includes(mediaId);
+          return (
+            <SegmentPill
+              key={audience}
+              audience={audience}
+              state={checked ? "on" : "erased"}
+              title={
+                checked
+                  ? `${AUDIENCE_LABEL[audience]} guests receive this file — untick to make this segment available again`
+                  : `${AUDIENCE_LABEL[audience]} guests are free again — tick to send them this file`
+              }
+              onClick={(value: boolean) => onToggle(audience, value)}
             />
-            <span className="grid size-2.5 place-items-center rounded-[2px] border border-current">
-              {checked && <Check size={8} strokeWidth={3.5} />}
-            </span>
-            {audience}
-          </label>
-        );
-      })}
-      <button
-        type="button"
-        aria-label={`Remove ${campaign.name} from this file`}
-        onClick={onRemove}
-        className="shrink-0 text-muted-foreground hover:text-destructive"
-      >
-        <X size={11} />
-      </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

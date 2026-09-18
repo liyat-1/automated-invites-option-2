@@ -1,12 +1,16 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import {
+  Check,
+  ChevronDown,
   Copy,
   Gift,
   Link2,
+  ListFilter,
   MoreVertical,
   Pencil,
   Plus,
   Search,
+  Tag,
   Trash2,
 } from "lucide-react";
 import { MarketingShell } from "./MarketingShell";
@@ -176,33 +180,42 @@ export function PromotionsPage() {
                   className="w-full rounded-md border border-border bg-muted/55 py-2.5 pl-9 pr-3 text-[13px] text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand focus:bg-background focus:ring-2 focus:ring-brand/20"
                 />
               </div>
-              <div className="flex gap-1 rounded-md bg-muted p-1 text-[12.5px]">
-                {CODES.map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => setCode(key)}
-                    className={`rounded px-3 py-1.5 font-medium transition-colors ${
-                      code === key ? "bg-card text-card-foreground shadow-card" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {key === "all" ? "All codes" : CODE_TYPE_LABEL[key]}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-1 rounded-md bg-muted p-1 text-[12.5px]">
-                {VIEWS.map(({ key, label }) => (
-                  <Button
-                    key={key}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setView(key)}
-                    className={view === key ? "bg-card text-card-foreground shadow-card hover:bg-card" : "text-muted-foreground"}
-                  >
-                    {label}
-                    <span className="text-[10px] tabular-nums text-muted-foreground">{viewCount(key)}</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <ListFilter size={13} />
+                    {viewLabel}
+                    <span className="text-[10px] tabular-nums text-muted-foreground">{viewCount(view)}</span>
+                    <ChevronDown size={13} className="text-muted-foreground" />
                   </Button>
-                ))}
-              </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  {VIEWS.map(({ key, label }) => (
+                    <DropdownMenuItem key={key} onSelect={() => setView(key)}>
+                      <span className="flex-1">{label}</span>
+                      <span className="text-[10px] tabular-nums text-muted-foreground">{viewCount(key)}</span>
+                      {view === key && <Check size={13} className="text-brand" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <Tag size={13} />
+                    {code === "all" ? "All codes" : CODE_TYPE_LABEL[code]}
+                    <ChevronDown size={13} className="text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  {CODES.map((key) => (
+                    <DropdownMenuItem key={key} onSelect={() => setCode(key)}>
+                      <span className="flex-1">{key === "all" ? "All codes" : CODE_TYPE_LABEL[key]}</span>
+                      {code === key && <Check size={13} className="text-brand" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -255,45 +268,53 @@ export function PromotionsPage() {
                     <p className="mt-auto truncate text-[10.5px] text-muted-foreground">{promotionValidity(promotion)}</p>
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-2 border-t border-border px-4 py-3 sm:w-[270px] sm:border-l sm:border-t-0">
+                  <div className="flex shrink-0 flex-col justify-center gap-2 border-t border-border px-4 py-3 sm:w-[240px] sm:border-l sm:border-t-0">
                     <span
-                      className={`shrink-0 rounded-sm px-2 py-1 text-[11px] font-semibold ${
+                      className={`w-fit shrink-0 rounded-sm px-2 py-1 text-[11px] font-semibold ${
                         count ? "bg-brand-soft text-brand" : "bg-muted text-muted-foreground"
                       }`}
                     >
                       {count === 0 ? "No campaigns" : `${count} campaign${count === 1 ? "" : "s"}`}
                     </span>
-                    <Button
-                      variant={count ? "outline" : "brand"}
-                      size="sm"
-                      className="ml-auto sm:ml-0"
-                      onClick={() => setManaging(promotion.id)}
-                    >
-                      <Link2 size={13} />
-                      {count ? "Edit assignment" : "Assign campaigns"}
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="size-8" aria-label={`Manage ${promotion.name}`}>
-                          <MoreVertical size={15} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onSelect={() => setEditingId(promotion.id)}>
-                          <Pencil size={13} />
-                          Edit config
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => duplicate(promotion.id)}>
-                          <Copy size={13} />
-                          Duplicate
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setDeletingId(promotion.id)}>
-                          <Trash2 size={13} />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant={count ? "outline" : "brand"}
+                        size="sm"
+                        className="min-w-0 flex-1"
+                        onClick={() => setManaging(promotion.id)}
+                      >
+                        <Link2 size={13} />
+                        <span className="truncate">{count ? "Edit assignment" : "Assign campaigns"}</span>
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="size-8 shrink-0"
+                            aria-label={`More actions for ${promotion.name}`}
+                            title="Edit config, duplicate or delete"
+                          >
+                            <MoreVertical size={15} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onSelect={() => setEditingId(promotion.id)}>
+                            <Pencil size={13} />
+                            Edit config
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => duplicate(promotion.id)}>
+                            <Copy size={13} />
+                            Duplicate
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setDeletingId(promotion.id)}>
+                            <Trash2 size={13} />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </article>
               );
