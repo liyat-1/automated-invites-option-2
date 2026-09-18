@@ -105,25 +105,19 @@ export function PromotionsPage() {
   });
   const countFor = (promotion: Promotion) => assignedCampaigns(promotion.id).length;
 
-  const inView = (promotion: Promotion) => {
+  const matchesView = (promotion: Promotion, key: View) => {
     const count = countFor(promotion);
-    if (view === "assigned") return count > 0;
-    if (view === "unassigned") return count === 0;
-    if (view === "expired") return promotionExpired(promotion);
+    if (key === "assigned") return count > 0;
+    if (key === "unassigned") return count === 0;
+    if (key === "expired") return promotionExpired(promotion);
     return true;
   };
   const matchesCode = (promotion: Promotion) => code === "all" || (promotion.codeType ?? "promo") === code;
   const matchesQuery = (promotion: Promotion) =>
     !q || `${promotion.name} ${promotion.detail} ${promotion.code}`.toLowerCase().includes(q);
 
-  const list = promotions.filter((p) => inView(p) && matchesCode(p) && matchesQuery(p));
-  const viewCount = (key: View) => {
-    const previous = view;
-    view = key;
-    const total = promotions.filter(inView).length;
-    view = previous;
-    return total;
-  };
+  const list = promotions.filter((p) => matchesView(p, view) && matchesCode(p) && matchesQuery(p));
+  const viewCount = (key: View) => promotions.filter((p) => matchesView(p, key)).length;
   const active = promotions.find((promotion) => promotion.id === managing) ?? null;
   const editTarget = promotions.find((promotion) => promotion.id === editingId) ?? null;
   const deleteTarget = promotions.find((promotion) => promotion.id === deletingId) ?? null;

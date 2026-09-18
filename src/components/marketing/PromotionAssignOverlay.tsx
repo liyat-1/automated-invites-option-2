@@ -394,7 +394,7 @@ function AssignedRow({
                     ? `${AUDIENCE_LABEL[key]} guests receive this offer — untick to give them a different one`
                     : `${AUDIENCE_LABEL[key]} guests are free again — tick to give them this offer`
               }
-              onChange={(value) => onChange(campaign.id, key, value ? promotion.id : null)}
+              onClick={(value) => onChange(campaign.id, key, value ? promotion.id : null)}
             />
           );
         })}
